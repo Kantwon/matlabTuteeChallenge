@@ -1,11 +1,12 @@
 from openai import OpenAI
 import streamlit as st
 
-with st.sidebar:
-    openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
+#with st.sidebar:
+#    openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
 
 st.title("💬 Matlab Mentee")
 st.caption("🚀 A streamlit chatbot powered by OpenAI LLM")
+openai_api_key = st.secrets["OPENAI_API_KEY"]
 if "messages" not in st.session_state:
     st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
 
