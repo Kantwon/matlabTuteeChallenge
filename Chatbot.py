@@ -111,7 +111,7 @@ for n in setNone:
         st.session_state[n] = None
 
 if "openai_model" not in st.session_state:
-    st.session_state.openai_model = "gpt-4-1106-preview"
+    st.session_state.openai_model = "gpt-4-turbo-preview"
 if "messages" not in st.session_state:
     st.session_state["messages"] = [{"role": "assistant", "content": "Hello! I'm your Matlab Mentee here to learn Matlab topics from you. What would you like to teach me?"}]
 
@@ -174,13 +174,13 @@ if st.session_state.start_session:
                 assistant_id=assistant_id,
                 instructions=model_instructions
             )
-
-            while run.status != 'completed':
-                time.sleep(1)
-                run = client.beta.threads.runs.retrieve(
-                    thread_id=st.session_state.thread_id,
-                    run_id=run.id
-                )
+            with st.spinner('Thinking and writing response...'):
+                while run.status != 'completed':
+                    time.sleep(1)
+                    run = client.beta.threads.runs.retrieve(
+                        thread_id=st.session_state.thread_id,
+                        run_id=run.id
+                    )
             messages = client.beta.threads.messages.list(
                 thread_id=st.session_state.thread_id
             )
@@ -241,6 +241,13 @@ if st.session_state.start_session:
                     del st.session_state.messages
                 
                 st.session_state.thread_id = None
+                for s in setFalse:
+                    st.session_state[s] = False
+      
+                for n in setNone:
+                    st.session_state[n] = None
+                st.rerun()
+
 
 
         else:
