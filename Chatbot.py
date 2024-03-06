@@ -222,13 +222,15 @@ if st.session_state.start_session:
 
             if st.button("Submit Answers"):
                 if "messages" in st.session_state:
-                    df1 = conn.read(worksheet="Conversations",usecols=list(range(len(allLogColumns)+1))).dropna()
+                    df1 = conn.read(worksheet="Conversations",usecols=list(range(len(allLogColumns)+1))).dropna(how='all')
+
 
                     df2_data = {}
                     for key in allLogColumns:
                         df2_data[key] = st.session_state[key]
 
                     df2 = pd.DataFrame(df2_data)
+                    
 
 
                     #df2 = pd.DataFrame({"Participant ID": st.session_state.participant_id,
@@ -237,6 +239,8 @@ if st.session_state.start_session:
                     #    "Transcript": st.session_state.transcript 
                     #    })
                     df3 = pd.concat([df1,df2],ignore_index = True)
+
+
                     conn.update(worksheet="Conversations",data=df3)
                     del st.session_state.messages
                 
