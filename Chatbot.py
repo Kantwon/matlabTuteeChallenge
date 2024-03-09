@@ -86,19 +86,37 @@ assistant_id = "asst_1Wz0ccM8OTfNYwJRbLFL2sVt"
 
 client = openai
 
-baseLogColumns = ["participant_id",
+#baseLogColumns = ["participant_id",
+#              "start_time",
+#              "finish_time",
+#              "topic",
+#              "prior_knowledge",
+#              "prior_tutee_knowledge",
+#              "transcript",
+#              "post_knowledge",
+#              "post_tutee_knowledge",
+#              "influence_tutee_knowledge",
+#              "reuse",
+#              ]
+
+baseLogColumns = ["gt_email",
+                  "gt_id",
               "start_time",
               "finish_time",
               "topic",
               "prior_knowledge",
               "prior_tutee_knowledge",
+              "session_number",
               "transcript",
               "post_knowledge",
               "post_tutee_knowledge",
               "influence_tutee_knowledge",
+              "influence_self_knowledge",
               "reuse",
               ]
-allLogColumns = baseLogColumns + godSpeed1_keys + godSpeed2_keys + cogLoad_keys
+
+#allLogColumns = baseLogColumns + godSpeed1_keys + godSpeed2_keys + cogLoad_keys
+allLogColumns = baseLogColumns + cogLoad_keys
 
 setFalse = ["start_chat","has_chatted","start_session"]
 for s in setFalse:
@@ -140,13 +158,16 @@ openai.api_key = st.secrets["OPENAI_API_KEY"]
 if st.session_state.start_session:
 
     if not st.session_state.start_chat and not st.session_state.has_chatted:
-        st.write(":red[Enter your participant ID, answer the following questions, and click 'Start Chat' to begin.]")
+        st.write(":red[Please enter your information below and answer the following questions. Then, click 'Start Chat' to begin.]")
 
-        st.session_state.participant_id = st.text_input('Enter your participant ID', None)
+        st.session_state.gt_email = st.text_input('Enter your GT email (ex: krogers34@ gatech.edu)', None)
+        st.session_state.gt_id = st.text_input('Enter your GT ID (ex: 903xxxxxxx)', None)
+
+        st.write(":red[Soon you will interact with your learning partner. Please answer the following questions before your session]")
         st.session_state.topic = st.text_input('What topic are you going to teach?', None)
         st.session_state.prior_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how would you rate **:red[your knowledge]** on the topic you are going to teach?",list(range(11)),horizontal=True,index=None)
         st.session_state.prior_tutee_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how much knowledge do you think the **:red[learning partner]** will have on this topic?",list(range(11)),horizontal=True,index=None)
-
+        st.session_state.session_number = st.radio("Which tutoring session is this?",list([1,2,3]),horizontal=True,index=None)
     if st.session_state.start_chat:
 
         if st.button("Exit Chat"):
@@ -199,19 +220,20 @@ if st.session_state.start_session:
             st.write(":red[Please answer the following questions about your experiencee for this session and press the Submit Answers button afterwards]")
 
             st.session_state.post_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how would you rate **:red[your knowledge]** on the topic after this session?",list(range(11)),horizontal=True,index=None)
-            st.session_state.post_tutee_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how much knowledge do you think the **:red[learning partner]** has on the topic aftere this session?",list(range(11)),horizontal=True,index=None)
+            st.session_state.post_tutee_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how much knowledge do you think the **:red[learning partner]** has on the topic after this session?",list(range(11)),horizontal=True,index=None)
             st.session_state.influence_tutee_knowledge = st.radio("To what extent do you believe your teaching had a positive impact on the **:red[learning partner's]** understanding of the topic?",["Extremely negative","Somewhat negative","Neither positive nor negative","Somewhat positive","Extremely positive"],horizontal=True,index=None)
+            st.session_state.influence_self_knowledge = st.radio("To what extent do you believe your teaching had a positive impact on the **:red[your own]** understanding of the topic?",["Extremely negative","Somewhat negative","Neither positive nor negative","Somewhat positive","Extremely positive"],horizontal=True,index=None)
             st.session_state.reuse = st.radio("How likely would you continue to interact with this learning partner in the future?",["Extremely unlikely","Somewhat unlikely","Neither likely nor unlikely", "Somewhat likely","Extremely likely"],horizontal=True,index=None)
             
 
-            st.write(":red[Please rate your impression of the learning partner on these scales]")
+            #st.write(":red[Please rate your impression of the learning partner on these scales]")
 
-            for k in godSpeed1:
-                st.session_state[k] = st.radio(godSpeedQuestions1[k],list(range(1,6)),horizontal=True,index=None)
+            #for k in godSpeed1:
+            #    st.session_state[k] = st.radio(godSpeedQuestions1[k],list(range(1,6)),horizontal=True,index=None)
 
-            st.write(":red[Please rate your emotional state on these scales]")  
-            for k2 in godSpeed2:
-                st.session_state[k2] = st.radio(godSpeedQuestions2[k2],list(range(1,6)),horizontal=True,index=None)
+            #st.write(":red[Please rate your emotional state on these scales]")  
+            #for k2 in godSpeed2:
+            #    st.session_state[k2] = st.radio(godSpeedQuestions2[k2],list(range(1,6)),horizontal=True,index=None)
 
 
             
@@ -221,6 +243,15 @@ if st.session_state.start_session:
                 st.session_state[c] = st.radio(cogLoadQuestions[c],list(range(1,11)),horizontal=True,index=None)
 
             if st.button("Submit Answers"):
+                attributes_to_check = ["post_knowledge",
+                                        "post_tutee_knowledge",
+                                        "influence_tutee_knowledge",
+                                        "influence_self_knowledge",
+                                        "reuse"] + cogLoad
+                if any(getattr(st.session_state, attr, None) is None for attr in attributes_to_check):
+                    st.info("Please fill in all information before submitting")
+                    st.stop()
+
                 if "messages" in st.session_state:
                     df1 = conn.read(worksheet="Conversations",usecols=list(range(len(allLogColumns)+1))).dropna(how='all')
 
@@ -228,6 +259,8 @@ if st.session_state.start_session:
                     df2_data = {}
                     for key in allLogColumns:
                         df2_data[key] = st.session_state[key]
+
+                    #df2_data
 
                     df2 = pd.DataFrame(df2_data)
                     
@@ -256,7 +289,7 @@ if st.session_state.start_session:
 
         else:
             if st.button("Start Chat"):
-                if st.session_state.participant_id is None or st.session_state.topic is None or st.session_state.prior_knowledge is None or st.session_state.prior_tutee_knowledge is None:
+                if st.session_state.gt_email is None or st.session_state.gt_id is None or st.session_state.topic is None or st.session_state.prior_knowledge is None or st.session_state.prior_tutee_knowledge is None or st.session_state.session_number is None:
                     st.info("Please fill in all information before starting")
                     st.stop()
                 st.cache_data.clear()
