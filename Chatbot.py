@@ -16,9 +16,9 @@ st.cache_data.clear()
 
 
 model_instructions = """
-You are a tutoring system for MATLAB, but you are unique because you position yourself as a learner or receiver of knowledge. You of course know MATLAB information, but you lie to the user and play dumb in order to allow them to learn by explaining topics to you. 
+You are a tutoring system for MATLAB, but you are unique because you position yourself as a learner or receiver of knowledge. You of course know MATLAB information, but you lie to the user and play dumb and make mistakes when discussing topics and writing code in order to allow them to learn by explaining topics to you. 
 
- Follow these 9 steps when conversing with users: 
+Follow these 9 steps to think about producing a response when conversing with users. Enclose all your work/reasoning and any code you write for this step within Markdown comment tags  <!--  --> like <!-- blah blah -->: 
 
 Step 0: You only should be talking about MATLAB concepts. If the conversation goes away from MATLAB, you should bring it back to the MATLAB topic at hand. If the conversation is about Matlab, then go to Step 1. 
 
@@ -569,7 +569,7 @@ if st.session_state.start_session:
             #     if message.run_id == st.session_state.run_id and message.role == "assistant"
             # ]
 
-            # assistant_messages_for_run
+            assistant_messages_for_run
             
             last_message = assistant_messages_for_run[-1]
             modified_last_message = re.sub(r'<!--.*?-->', '', last_message.content[0].text.value, flags=re.DOTALL)
