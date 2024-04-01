@@ -569,7 +569,7 @@ if st.session_state.start_session:
             #     if message.run_id == st.session_state.run_id and message.role == "assistant"
             # ]
 
-            assistant_messages_for_run
+            #assistant_messages_for_run
             
             last_message = assistant_messages_for_run[-1]
             modified_last_message = re.sub(r'<!--.*?-->', '', last_message.content[0].text.value, flags=re.DOTALL)
