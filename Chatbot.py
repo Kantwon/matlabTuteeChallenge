@@ -579,8 +579,8 @@ if st.session_state.start_session:
             words_in_message = len(modified_last_message.split())
             words_per_minute = 100
             delay = (words_in_message / words_per_minute) * 60 
-            if delay > 30:
-                delay = 30
+            if delay > 20:
+                delay = random.randint(5, 45)
             #delay
             # Implement the artificial delay
             for i in range(0,int(delay),10):
