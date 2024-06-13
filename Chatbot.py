@@ -7,12 +7,38 @@ import datetime
 import pandas as pd 
 import random 
 import re
+from st_files_connection import FilesConnection
+from google.cloud import storage
+import os
+import io
 
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ".streamlit/credential.json"
+client_bucket = storage.Client()
+bucket_name = "matlabtuteesummer2024_bucket"
+file_name = "matlabTuteeSummer2024_Transcripts.csv"
 
-conn = st.connection("gsheets", type=GSheetsConnection)
+def read_csv_from_bucket(bucket_name, file_name):
+    bucket = client_bucket.bucket(bucket_name)
+    blob = bucket.blob(file_name)
+    data = blob.download_as_text()
+    df = pd.read_csv(io.StringIO(data))
+    return df
+
+# Function to upload the modified CSV file to the bucket
+def upload_csv_to_bucket(df, bucket_name, file_name):
+    bucket = client_bucket.bucket(bucket_name)
+    blob = bucket.blob(file_name)
+    blob.upload_from_string(df.to_csv(index=False), content_type='text/csv')
+    #st.success("File uploaded successfully!")
+#conn = st.connection("gsheets", type=GSheetsConnection)
+conn = st.connection('gcs', type=FilesConnection)
+
 st.cache_data.clear()
 #df1 = conn.read(worksheet="Conversations",usecols=list(range(4))).dropna()
 #st.dataframe(df1)
+
+
+
 
 
 model_instructions = """
@@ -368,9 +394,10 @@ if st.session_state.start_session:
                 st.session_state.transcript = ['\n\n--------------------------\n\n'.join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages])]
                 st.session_state.is_full_transcript = 1
                 if "messages" in st.session_state:
-                    df1 = conn.read(worksheet="Conversations",usecols=list(range(len(allLogColumns)+1))).dropna(how='all')
-
-
+                    #df1 = conn.read(worksheet="Conversations",usecols=list(range(len(allLogColumns)+1))).dropna(how='all')
+                    #df1 = conn.read("matlabtuteesummer2024_bucket/matlabTuteeSummer2024_Transcripts.csv", input_format="csv", ttl=600)
+                    
+                    df1    = read_csv_from_bucket(bucket_name, file_name)
                     df2_data = {}
                     for key in allLogColumns:
                         df2_data[key] = st.session_state[key]
@@ -578,14 +605,14 @@ if st.session_state.start_session:
             # Calculate the delay
             words_in_message = len(modified_last_message.split())
             words_per_minute = 100
-            delay = (words_in_message / words_per_minute) * 60 
-            if delay > 20:
-                delay = random.randint(5, 45)
+            #delay = (words_in_message / words_per_minute) * 60 
+            #if delay > 20:
+            #    delay = random.randint(5, 45)
             #delay
             # Implement the artificial delay
-            for i in range(0,int(delay),10):
-                with st.spinner('Matlab Tutee is writing...'):
-                    time.sleep(10)
+            #for i in range(0,int(delay),10):
+            #    with st.spinner('Matlab Tutee is writing...'):
+            #        time.sleep(10)
             with st.chat_message("assistant"):
                 st.markdown(modified_last_message)
 
@@ -596,9 +623,9 @@ if st.session_state.start_session:
             st.session_state.is_full_transcript = 0
             st.session_state.finish_time = datetime.datetime.now()
             if "messages" in st.session_state:
-                df1 = conn.read(worksheet="Conversations",usecols=list(range(len(allLogColumns)+1))).dropna(how='all')
-
-
+                #df1 = conn.read(worksheet="Conversations",usecols=list(range(len(allLogColumns)+1))).dropna(how='all')
+                #df1 = conn.read("matlabtuteesummer2024_bucket/matlabTuteeSummer2024_Transcripts.csv", input_format="csv", ttl=600)
+                df1    = read_csv_from_bucket(bucket_name, file_name)
                 df2_data = {}
                 for key in allLogColumns:
                     df2_data[key] = st.session_state[key]
@@ -617,7 +644,8 @@ if st.session_state.start_session:
                 df3 = pd.concat([df1,df2],ignore_index = True)
 
 
-                conn.update(worksheet="Conversations",data=df3)
+                #conn.update(worksheet="Conversations",data=df3)
+                upload_csv_to_bucket(df3, bucket_name, file_name)
 
             # for message in assistant_messages_for_run:
             #     #message.content[0].text.value
