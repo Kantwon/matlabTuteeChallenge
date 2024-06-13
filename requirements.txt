@@ -6,3 +6,6 @@ anthropic>=0.3.0
 trubrics>=1.4.3
 streamlit-feedback
 st-gsheets-connection
+
+gcsfs==2024.6.0
+st-files-connection
