@@ -433,8 +433,8 @@ if st.session_state.start_session:
                     #    })
                     df3 = pd.concat([df1,df2],ignore_index = True)
 
-
-                    conn.update(worksheet="Conversations",data=df3)
+                    upload_csv_to_bucket(df3, bucket_name, file_name)
+                    #conn.update(worksheet="Conversations",data=df3)
                     del st.session_state.messages
                 
                 st.session_state.thread_id = None
