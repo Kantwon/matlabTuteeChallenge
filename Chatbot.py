@@ -12,6 +12,7 @@ from google.cloud import storage
 import os
 import io
 from google.oauth2 import service_account
+import pytz
 
 gcp_credentials = {
     "type": st.secrets["gcp_service_account"]["type"],
@@ -302,29 +303,33 @@ teacherDetector_id = 'asst_xAHv3YmF4baHU7ZRTHa7vFvf'
 #              "reuse",
 #              ]
 
-# baseLogColumns = ["gt_email",
-#                   "gt_id",
-#               "start_time",
-#               "finish_time",
-#               "topic",
-#               "prior_knowledge",
-#               "prior_tutee_knowledge",
-#               "session_number",
-#               "transcript",
-#               "post_knowledge",
-#               "post_tutee_knowledge",
-#               "influence_tutee_knowledge",
-#               "influence_self_knowledge",
-#               "reuse",
-#               ]
-
 baseLogColumns = ["gt_email",
                   "gt_id",
               "start_time",
               "finish_time",
-              "thread_id",
-              "is_full_transcript",
-              "transcript"]
+              "topic",
+              "prep",
+              "strat",
+              "prior_knowledge",
+              "prior_tutee_knowledge",
+              "transcript",
+              "post_knowledge",
+              "post_tutee_knowledge",
+              "influence_tutee_knowledge",
+              "influence_self_knowledge",
+              "mistakes",
+              "use_notes",
+              "review_notes",
+              "thoughts_on_session"
+              ]
+
+# baseLogColumns = ["gt_email",
+#                   "gt_id",
+#               "start_time",
+#               "finish_time",
+#               "thread_id",
+#               "is_full_transcript",
+#               "transcript"]
 
 #allLogColumns = baseLogColumns + godSpeed1_keys + godSpeed2_keys + cogLoad_keys
 # allLogColumns = baseLogColumns + cogLoad_keys
@@ -346,22 +351,22 @@ if "messages" not in st.session_state:
     st.session_state["messages"] = [{"role": "assistant", "content": "Hey! Thanks for meeting with me today. Which topic are you going to help me with during this session?"}]
 
 
-#if "start_chat" not in st.session_state:
+# if "start_chat" not in st.session_state:
 #    st.session_state["start_chat"] = False
-#if "has_chatted" not in st.session_state:
+# if "has_chatted" not in st.session_state:
 #    st.session_state["has_chatted"] = False
-#if "start_session" not in st.session_state:
+# if "start_session" not in st.session_state:
 #    st.session_state["start_session"] = False
 
-#if "thread_id" not in st.session_state:
+# if "thread_id" not in st.session_state:
 #    st.session_state["thread_id"] = None
-#if "participant_id" not in st.session_state:
+# if "participant_id" not in st.session_state:
 #    st.session_state["participant_id"] = None
-#if "start_time" not in st.session_state:
+# if "start_time" not in st.session_state:
 #    st.session_state["start_time"] = None
-#if "topic" not in st.session_state:
+# if "topic" not in st.session_state:
 #    st.session_state["topic"] = None
-#if "topic" not in st.session_state:
+# if "topic" not in st.session_state:
 #    st.session_state["priorKnowledge"] = None
 
 openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -398,17 +403,19 @@ if st.session_state.start_session:
         st.session_state.gt_email = st.text_input('Enter your GT email (ex: krogers34@ gatech.edu)', None)
         st.session_state.gt_id = st.text_input('Enter your GT ID (ex: 903xxxxxxx)', None)
 
-        #st.write(":red[Soon you will interact with your learning partner. Please answer the following questions before your session]")
-        #st.session_state.topic = st.text_input('What topic are you going to teach?', None)
-        #st.session_state.prior_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how would you rate **:red[your knowledge]** on the topic you are going to teach?",list(range(11)),horizontal=True,index=None)
-        #st.session_state.prior_tutee_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how much knowledge do you think the **:red[learning partner]** will have on this topic?",list(range(11)),horizontal=True,index=None)
+        st.write(":red[Soon you will interact with your learning partner. Please answer the following questions before your session]")
+        st.session_state.topic = st.text_input('What topic are you going to teach?', None)
+        st.session_state.prep= st.text_input("How did you prepare for this session? Type N/A if you didnt",None)
+        st.session_state.strat= st.text_input("What is going to be your plan/strategy for this session?",None)
+        st.session_state.prior_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how would you rate **:red[your knowledge]** on the topic you are going to teach?",list(range(11)),horizontal=True,index=None)
+        st.session_state.prior_tutee_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how much knowledge do you think the **:red[learning partner]** will have on this topic?",list(range(11)),horizontal=True,index=None)
         #st.session_state.session_number = st.radio("Which tutoring session is this?",list([1,2,3]),horizontal=True,index=None)
     if st.session_state.start_chat:
         with st.sidebar:
-            st.write("Press the Exit Chat button below to finish the conversation.")
+            st.write("Press the Exit Chat button below to finish the conversation and move on to the post-session questions")
             if st.button("Exit Chat"):
                 st.session_state.start_chat = False  # Reset the chat state
-                st.session_state.finish_time = datetime.datetime.now()
+                st.session_state.finish_time = datetime.datetime.now(pytz.timezone('US/Eastern'))
                 st.session_state.transcript = ['\n\n--------------------------\n\n'.join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages])]
                 st.session_state.is_full_transcript = 1
                 if "messages" in st.session_state:
@@ -435,17 +442,17 @@ if st.session_state.start_session:
 
                     upload_csv_to_bucket(df3, bucket_name, file_name)
                     #conn.update(worksheet="Conversations",data=df3)
-                    del st.session_state.messages
+                #     del st.session_state.messages
                 
-                st.session_state.thread_id = None
-                for s in setFalse:
-                    st.session_state[s] = False
+                # st.session_state.thread_id = None
+                # for s in setFalse:
+                #     st.session_state[s] = False
       
-                for n in setNone:
-                    st.session_state[n] = None
-                st.rerun()
+                # for n in setNone:
+                #     st.session_state[n] = None
+                # st.rerun()
                 
-                #st.rerun()
+                st.rerun()
 
         for msg in st.session_state.messages:
             st.chat_message(msg["role"]).write(re.sub(r'<!--.*?-->', '', msg["content"],flags=re.DOTALL))
@@ -631,6 +638,9 @@ if st.session_state.start_session:
             #for i in range(0,int(delay),10):
             #    with st.spinner('Matlab Tutee is writing...'):
             #        time.sleep(10)
+
+            with st.spinner('Matlab Tutee is writing...'):
+                time.sleep(3)
             with st.chat_message("assistant"):
                 st.markdown(modified_last_message)
 
@@ -639,7 +649,7 @@ if st.session_state.start_session:
             #st.session_state.transcript
 
             st.session_state.is_full_transcript = 0
-            st.session_state.finish_time = datetime.datetime.now()
+            st.session_state.finish_time = datetime.datetime.now(pytz.timezone('US/Eastern'))
             if "messages" in st.session_state:
                 #df1 = conn.read(worksheet="Conversations",usecols=list(range(len(allLogColumns)+1))).dropna(how='all')
                 #df1 = conn.read("matlabtuteesummer2024_bucket/matlabTuteeSummer2024_Transcripts.csv", input_format="csv", ttl=600)
@@ -673,16 +683,19 @@ if st.session_state.start_session:
             #         st.markdown(re.sub(r'<!--.*?-->', '', message.content[0].text.value, flags=re.DOTALL))
     else:
         if st.session_state.has_chatted :
-            st.write("Thank you")
+            st.write("Post Session Questions")
 
-            #st.write(":red[Please answer the following questions about your experiencee for this session and press the Submit Answers button afterwards]")
+            st.write(":red[Please answer the following questions about your experiencee for this session and press the Submit Answers button afterwards]")
 
-            #st.session_state.post_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how would you rate **:red[your knowledge]** on the topic after this session?",list(range(11)),horizontal=True,index=None)
-            #st.session_state.post_tutee_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how much knowledge do you think the **:red[learning partner]** has on the topic after this session?",list(range(11)),horizontal=True,index=None)
-            #st.session_state.influence_tutee_knowledge = st.radio("To what extent do you believe your teaching had a positive impact on the **:red[learning partner's]** understanding of the topic?",["Extremely negative","Somewhat negative","Neither positive nor negative","Somewhat positive","Extremely positive"],horizontal=True,index=None)
-            #st.session_state.influence_self_knowledge = st.radio("To what extent do you believe your teaching had a positive impact on the **:red[your own]** understanding of the topic?",["Extremely negative","Somewhat negative","Neither positive nor negative","Somewhat positive","Extremely positive"],horizontal=True,index=None)
+            st.session_state.post_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how would you rate **:red[your knowledge]** on the topic after this session?",list(range(11)),horizontal=True,index=None)
+            st.session_state.post_tutee_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how much knowledge do you think the **:red[learning partner]** has on the topic after this session?",list(range(11)),horizontal=True,index=None)
+            st.session_state.influence_tutee_knowledge = st.radio("To what extent do you believe your teaching had a positive impact on the **:red[learning partner's]** understanding of the topic?",["Extremely negative","Somewhat negative","Neither positive nor negative","Somewhat positive","Extremely positive"],horizontal=True,index=None)
+            st.session_state.influence_self_knowledge = st.radio("To what extent do you believe your teaching had a positive impact on the **:red[your own]** understanding of the topic?",["Extremely negative","Somewhat negative","Neither positive nor negative","Somewhat positive","Extremely positive"],horizontal=True,index=None)
             #st.session_state.reuse = st.radio("How likely would you continue to interact with this learning partner in the future?",["Extremely unlikely","Somewhat unlikely","Neither likely nor unlikely", "Somewhat likely","Extremely likely"],horizontal=True,index=None)
-            
+            st.session_state.mistakes = st.radio("From 0 to 10+, how many mistakes or errors did you make during this session? This includes writing incorrect code or making factual errors ",list(range(11)),horizontal=True,index=None)
+            st.session_state.use_notes = st.radio("To what extent did you use your notes or other resources (like Matlab) to assist you during the session?",["Not at all - I did not refer to any notes or resources.","Rarely - I seldom looked at my notes or resources.","Sometimes - I occasionally consulted my notes or resources.","Often - I frequently turned to my notes or resources for assistance.","Always - I continuously relied on my notes or resources throughout the session."],horizontal=False,index=None)
+            st.session_state.review_notes = st.radio("Given how the session went, how likely are you now to go back and review your notes or refresh/relearn topics?",["Extremely unlikely","Somewhat unlikely","Neither likely nor unlikely", "Somewhat likely","Extremely likely"],horizontal=False,index=None)
+            st.session_state.thoughts_on_session= st.text_input("Throughout the session, what do you think went well or didn't go well? Were any of your strategies particularly successful or unsuccessful? Is there anything you would do differently?",None)
 
             #st.write(":red[Please rate your impression of the learning partner on these scales]")
 
@@ -700,59 +713,79 @@ if st.session_state.start_session:
             #for c in cogLoad:
             #    st.session_state[c] = st.radio(cogLoadQuestions[c],list(range(1,11)),horizontal=True,index=None)
 
-            #if st.button("Submit Answers"):
-                #attributes_to_check = ["post_knowledge",
-                #                        "post_tutee_knowledge",
-                #                        "influence_tutee_knowledge",
-                #                        "influence_self_knowledge",
-                #                        "reuse"] + cogLoad
-                #if any(getattr(st.session_state, attr, None) is None for attr in attributes_to_check):
-                #    st.info("Please fill in all information before submitting")
-                #    st.stop()
+            if st.button("Submit Answers & Return to Home Screen"):
+                attributes_to_check = ["post_knowledge",
+                                        "post_tutee_knowledge",
+                                        "influence_tutee_knowledge",
+                                        "influence_self_knowledge",
+                                        "use_notes",
+                                        "review_notes",
+                                        "mistakes",
+                                        "thoughts_on_session"]
+                if any(getattr(st.session_state, attr, None) is None for attr in attributes_to_check):
+                   st.info("Please fill in all information before submitting")
+                   st.stop()
 
-                # if "messages" in st.session_state:
-                #     df1 = conn.read(worksheet="Conversations",usecols=list(range(len(allLogColumns)+1))).dropna(how='all')
+                if "messages" in st.session_state:
+                    # df1 = conn.read(worksheet="Conversations",usecols=list(range(len(allLogColumns)+1))).dropna(how='all')
 
 
-                #     df2_data = {}
-                #     for key in allLogColumns:
-                #         df2_data[key] = st.session_state[key]
+                    # df2_data = {}
+                    # for key in allLogColumns:
+                    #     df2_data[key] = st.session_state[key]
 
-                #     #df2_data
+                    # #df2_data
 
-                #     df2 = pd.DataFrame(df2_data)
+                    # df2 = pd.DataFrame(df2_data)
                     
 
 
-                #     #df2 = pd.DataFrame({"Participant ID": st.session_state.participant_id,
-                #     #    "Start": st.session_state.start_time,
-                #     #    "Finish": st.session_state.finish_time,
-                #     #    "Transcript": st.session_state.transcript 
-                #     #    })
-                #     df3 = pd.concat([df1,df2],ignore_index = True)
+                    #df2 = pd.DataFrame({"Participant ID": st.session_state.participant_id,
+                    #    "Start": st.session_state.start_time,
+                    #    "Finish": st.session_state.finish_time,
+                    #    "Transcript": st.session_state.transcript 
+                    #    })
+                    # df3 = pd.concat([df1,df2],ignore_index = True)
 
 
-                #     conn.update(worksheet="Conversations",data=df3)
-                #     del st.session_state.messages
+                    # conn.update(worksheet="Conversations",data=df3)
+
+                    df1    = read_csv_from_bucket(bucket_name, file_name)
+                    df2_data = {}
+                    for key in allLogColumns:
+                        df2_data[key] = st.session_state[key]
+
+                    #df2_data
+
+                    df2 = pd.DataFrame(df2_data)
+
+                    df3 = pd.concat([df1,df2],ignore_index = True)
+
+
+                #conn.update(worksheet="Conversations",data=df3)
+                    upload_csv_to_bucket(df3, bucket_name, file_name)
+
+
+                    del st.session_state.messages
                 
-                # st.session_state.thread_id = None
-                # for s in setFalse:
-                #     st.session_state[s] = False
+                st.session_state.thread_id = None
+                for s in setFalse:
+                    st.session_state[s] = False
       
-                # for n in setNone:
-                #     st.session_state[n] = None
-                # st.rerun()
+                for n in setNone:
+                    st.session_state[n] = None
+                st.rerun()
 
         else:
             if st.button("Start Chat"):
                 #if st.session_state.gt_email is None or st.session_state.gt_id is None or st.session_state.topic is None or st.session_state.prior_knowledge is None or st.session_state.prior_tutee_knowledge is None or st.session_state.session_number is None:
                 #    st.info("Please fill in all information before starting")
                 #    st.stop()
-                if st.session_state.gt_email is None or st.session_state.gt_id is None:
+                if st.session_state.gt_email is None or st.session_state.gt_id is None or st.session_state.topic is None or st.session_state.prep is None or st.session_state.strat is None or st.session_state.prior_knowledge is None or st.session_state.prior_tutee_knowledge is None:
                    st.info("Please fill in all information before starting")
                    st.stop()
                 st.cache_data.clear()
-                st.session_state.start_time = datetime.datetime.now()
+                st.session_state.start_time = datetime.datetime.now(pytz.timezone('US/Eastern'))
                 st.session_state.start_chat = True
                 st.session_state.has_chatted = True
                 thread = client.beta.threads.create()
