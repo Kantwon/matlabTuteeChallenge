@@ -9,3 +9,4 @@ st-gsheets-connection
 
 gcsfs==2024.6.0
 st-files-connection
+google-cloud-storage
