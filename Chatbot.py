@@ -12,7 +12,7 @@ from google.cloud import storage
 import os
 import io
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "credential.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ".streamlit/credential.json"
 client_bucket = storage.Client()
 bucket_name = "matlabtuteesummer2024_bucket"
 file_name = "matlabTuteeSummer2024_Transcripts.csv"
