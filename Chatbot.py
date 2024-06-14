@@ -413,12 +413,12 @@ if st.session_state.start_session:
         st.session_state.gt_email = st.text_input('Enter your GT email (ex: krogers34@ gatech.edu)', None)
         st.session_state.gt_id = st.text_input('Enter your GT ID (ex: 903xxxxxxx)', None)
 
-        st.write(":red[Soon you will interact with your learning partner. Please answer the following questions before your session]")
+        st.write(":red[Soon you will interact with your Matlab Tutee. Please answer the following questions before your session]")
         st.session_state.topic = st.text_input('What topic are you going to teach?', None)
         st.session_state.prep= st.text_input("How did you prepare for this session? Type N/A if you didnt",None)
         st.session_state.strat= st.text_input("What is going to be your plan/strategy for this session?",None)
         st.session_state.prior_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how would you rate **:red[your knowledge]** on the topic you are going to teach?",list(range(11)),horizontal=True,index=None)
-        st.session_state.prior_tutee_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how much knowledge do you think the **:red[learning partner]** will have on this topic?",list(range(11)),horizontal=True,index=None)
+        st.session_state.prior_tutee_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how much knowledge do you think the **:red[Matlab Tutee]** will have on this topic?",list(range(11)),horizontal=True,index=None)
         #st.session_state.session_number = st.radio("Which tutoring session is this?",list([1,2,3]),horizontal=True,index=None)
     if st.session_state.start_chat:
         with st.sidebar:
@@ -698,16 +698,16 @@ if st.session_state.start_session:
             st.write(":red[Please answer the following questions about your experiencee for this session and press the Submit Answers button afterwards]")
 
             st.session_state.post_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how would you rate **:red[your knowledge]** on the topic after this session?",list(range(11)),horizontal=True,index=None)
-            st.session_state.post_tutee_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how much knowledge do you think the **:red[learning partner]** has on the topic after this session?",list(range(11)),horizontal=True,index=None)
-            st.session_state.influence_tutee_knowledge = st.radio("To what extent do you believe your teaching had a positive impact on the **:red[learning partner's]** understanding of the topic?",["Extremely negative","Somewhat negative","Neither positive nor negative","Somewhat positive","Extremely positive"],horizontal=True,index=None)
+            st.session_state.post_tutee_knowledge = st.radio("From 0 (no knowledge) to 10 (expert knowledge), how much knowledge do you think the **:red[Matlab Tutee]** has on the topic after this session?",list(range(11)),horizontal=True,index=None)
+            st.session_state.influence_tutee_knowledge = st.radio("To what extent do you believe your teaching had a positive impact on the **:red[Matlab Tutee's]** understanding of the topic?",["Extremely negative","Somewhat negative","Neither positive nor negative","Somewhat positive","Extremely positive"],horizontal=True,index=None)
             st.session_state.influence_self_knowledge = st.radio("To what extent do you believe your teaching had a positive impact on the **:red[your own]** understanding of the topic?",["Extremely negative","Somewhat negative","Neither positive nor negative","Somewhat positive","Extremely positive"],horizontal=True,index=None)
-            #st.session_state.reuse = st.radio("How likely would you continue to interact with this learning partner in the future?",["Extremely unlikely","Somewhat unlikely","Neither likely nor unlikely", "Somewhat likely","Extremely likely"],horizontal=True,index=None)
+            #st.session_state.reuse = st.radio("How likely would you continue to interact with this Matlab Tutee in the future?",["Extremely unlikely","Somewhat unlikely","Neither likely nor unlikely", "Somewhat likely","Extremely likely"],horizontal=True,index=None)
             st.session_state.mistakes = st.radio("From 0 to 10+, how many mistakes or errors did you make during this session? This includes writing incorrect code or making factual errors ",list(range(11)),horizontal=True,index=None)
             st.session_state.use_notes = st.radio("To what extent did you use your notes or other resources (like Matlab) to assist you during the session?",["Not at all - I did not refer to any notes or resources.","Rarely - I seldom looked at my notes or resources.","Sometimes - I occasionally consulted my notes or resources.","Often - I frequently turned to my notes or resources for assistance.","Always - I continuously relied on my notes or resources throughout the session."],horizontal=False,index=None)
             st.session_state.review_notes = st.radio("Given how the session went, how likely are you now to go back and review your notes or refresh/relearn topics?",["Extremely unlikely","Somewhat unlikely","Neither likely nor unlikely", "Somewhat likely","Extremely likely"],horizontal=False,index=None)
             st.session_state.thoughts_on_session= st.text_input("Throughout the session, what do you think went well or didn't go well? Were any of your strategies particularly successful or unsuccessful? Is there anything you would do differently?",None)
 
-            #st.write(":red[Please rate your impression of the learning partner on these scales]")
+            #st.write(":red[Please rate your impression of the Matlab Tutee on these scales]")
 
             #for k in godSpeed1:
             #    st.session_state[k] = st.radio(godSpeedQuestions1[k],list(range(1,6)),horizontal=True,index=None)
