@@ -31,10 +31,10 @@ credentials = service_account.Credentials.from_service_account_info(gcp_credenti
 client_bucket = storage.Client(credentials=credentials, project=gcp_credentials["project_id"])
 
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ".streamlit/credential.json"
+#os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ".streamlit/credential.json"
 #client_bucket = storage.Client()
 bucket_name = "matlabtuteesummer2024_bucket"
-file_name = "matlabTuteeSummer2024_Transcripts.csv"
+file_name = "matlabTuteeChallenge2024_Transcripts.csv"
 
 def read_csv_from_bucket(bucket_name, file_name):
     bucket = client_bucket.bucket(bucket_name)
@@ -431,7 +431,7 @@ def runAssistant(assistant_id,thread_id,user_instructions):
             with st.spinner('Matlab Tutee is writing...'):
                 print("in progress...")
                 
-st.title("🤖 Matlab Tutee")
+st.title("🤖 Challenge 2024 Matlab Tutee")
 
 if st.session_state.start_session:
 
