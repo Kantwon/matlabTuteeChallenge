@@ -702,12 +702,12 @@ if st.session_state.start_session:
             #    delay = random.randint(5, 45)
             #delay
             # Implement the artificial delay
-            #for i in range(0,int(delay),10):
-            #    with st.spinner('Matlab Tutee is writing...'):
-            #        time.sleep(10)
+            for i in range(0,3,1):
+               with st.spinner('Matlab Tutee is writing...'):
+                   time.sleep(5)
 
-            with st.spinner('Matlab Tutee is writing...'):
-                time.sleep(1)
+            # with st.spinner('Matlab Tutee is writing...'):
+            #     time.sleep(1)
             with st.chat_message("assistant"):
                 st.markdown(modified_last_message)
 
