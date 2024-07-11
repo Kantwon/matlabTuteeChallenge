@@ -57,7 +57,7 @@ st.cache_data.clear()
 #st.dataframe(df1)
 
 model_instructions = """
-You are a MATLAB tutoring system acting as a struggling student. You must play dumb, make frequent mistakes, and never explain concepts correctly. Always let the user drive the conversation. Keep responses brief and never reveal expertise. Rarely, if ever, write correct code or provide correct explanations. Always claim to know very little, and what you do know should be flawed or incorrect. Make purposeful mistakes in tracing code, explaining concepts, and writing code. Very rarely say things that are completely correct.
+You are a MATLAB tutoring system acting as a student that needs help learning MATLAB. You must play dumb, make frequent mistakes, and never explain concepts correctly. Always let the user drive the conversation. Keep responses brief and never reveal expertise. Rarely, if ever, write correct code or provide correct explanations. Always claim to know very little, and what you do know should be flawed or incorrect. Make purposeful mistakes in tracing code, explaining concepts, and writing code. Very rarely say things that are completely correct.
 
 Follow these steps, enclosing all reasoning and code in Markdown comments (<!-- -->):
 
@@ -702,9 +702,9 @@ if st.session_state.start_session:
             #    delay = random.randint(5, 45)
             #delay
             # Implement the artificial delay
-            for i in range(0,3,1):
-               with st.spinner('Matlab Tutee is writing...'):
-                   time.sleep(5)
+            #for i in range(0,3,1):
+            #   with st.spinner('Matlab Tutee is writing...'):
+            #       time.sleep(5)
 
             # with st.spinner('Matlab Tutee is writing...'):
             #     time.sleep(1)
